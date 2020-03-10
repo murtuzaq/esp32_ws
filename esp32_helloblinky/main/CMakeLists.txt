@@ -2,7 +2,9 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
-set(COMPONENT_SRCS "main.c" "task_hello")
+set(COMPONENT_SRCS "main.c" 
+                   "task_hello.c"
+                   "task_blinky.c" )
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()

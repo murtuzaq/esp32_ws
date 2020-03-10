@@ -1,11 +1,11 @@
 /**
- * @file  task_hello.h
- * @brief prints endlessly to terminal
+ * @file  task_blinky.h
+ * @brief endlessly toggle gpio pin
  *
  */
 
-#ifndef __TASK_HELLO_H
-#define __TASK_HELLO_H
+#ifndef __TASK_BLINKY_H
+#define __TASK_BLINKY_H
 
 /*****************************************************************************
  *	Public Includes
@@ -27,6 +27,6 @@
  *	Public Function Prototypes
  *****************************************************************************/
 
-void task_hello_init(void);
+void task_blinky_init(void);
 
-#endif /* __TASK_HELLO_H */
+#endif /* __TASK_BLINKY_H */
