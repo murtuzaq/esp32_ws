@@ -2,17 +2,9 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "stdbool.h"
+#include "task_hello.h"
 
 #define BLINK_GPIO 13
-
-void hello_task(void *pvParameter)
-{
-	while(1)
-	{
-		printf("Hello world!\n");
-		vTaskDelay(1000 / portTICK_RATE_MS);
-	}
-}
 
 void blinky_task(void *pvParameter)
 {
@@ -35,7 +27,7 @@ void blinky_task(void *pvParameter)
 
 void app_main(void)
 {
-	xTaskCreate(&hello_task, "hello_task", 2048, NULL, 5, NULL);
+	task_hello_init();
 	xTaskCreate(&blinky_task, "blinky_task", 2048, NULL, 5, NULL);
 }
 
