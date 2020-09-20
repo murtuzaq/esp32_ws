@@ -4,3 +4,6 @@
 [submodule "esp32_clock/components/lvgl/lvgl"]
 	path = esp32_clock/components/lvgl/lvgl
 	url = https://github.com/lvgl/lvgl.git
+[submodule "esp32_clock/components/lv_examples/lv_examples"]
+	path = esp32_clock/components/lv_examples/lv_examples
+	url = https://github.com/lvgl/lv_examples.git
