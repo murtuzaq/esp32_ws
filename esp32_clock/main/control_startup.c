@@ -1,6 +1,6 @@
 /**
- * @file app_hello.c
- * @brief prints endlessly to terminal
+ * @file app_control.c
+ * @brief thread that host all the control loops that drives the flow for the project
  *
  */
 
@@ -9,6 +9,8 @@
  *****************************************************************************/
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "control_startup.h"
+#include "esp_log.h"
 /*****************************************************************************
  *	Private External References
  *****************************************************************************/
@@ -24,52 +26,38 @@
 /*****************************************************************************
  *	Private Variables
  *****************************************************************************/
-
+typedef struct control_startup {
+//place static global variables here...
+};
 /*****************************************************************************
  *	Private Function Prototypes
  *****************************************************************************/
-static void app_hello(void *pvParameter);
+
 /*****************************************************************************
  *	Public Functions
  *****************************************************************************/
+
 /*****************************************************************************
- *  app_hello_init
+ *  control_startup_exe
  *  Parameters:
  *    none
  *  Returns:
  *    none
  *  Description:
- *    Initialize module here
+ *    main startup loop
  *****************************************************************************/
-void app_hello_init(void)
+void control_startup_exe(void)
 {
-	//connect printf to terminal uart0
-
-	//create task;
-	xTaskCreate(&app_hello, "app_hello", 2048, NULL, 5, NULL);
+	ESP_LOGW(__FUNCTION__, "startup");
+	while(1)
+	{
+		//printf("Hello world!\n");
+		ESP_LOGW(__FUNCTION__, "hello world ");
+		vTaskDelay(10000 / portTICK_PERIOD_MS);
+	}
 }
 
 /*****************************************************************************
  *	Private Functions
  *****************************************************************************/
-
-/*****************************************************************************
- *  app_hello
- *  Parameters:
- *    none
- *  Returns:
- *    none
- *  Description:
- *    Run Infinite loop here.
- *    Endlessly prints to terminal;
- *****************************************************************************/
-static void app_hello(void *pvParameter)
-{
-	while(1)
-	{
-		printf("Hello world!\n");
-		vTaskDelay(1000 / portTICK_RATE_MS);
-	}
-}
-
 

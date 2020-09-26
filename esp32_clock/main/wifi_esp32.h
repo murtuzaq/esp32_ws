@@ -1,16 +1,19 @@
 /**
- * @file  task_blinky.h
- * @brief endlessly toggle gpio pin
+ * @file  wifi_esp32.h
+ * @brief application interface to esp wifi module
  *
  */
 
-#ifndef __APP_BLINKY_H
-#define __APP_BLINKY_H
+#ifndef __wifi_esp32_H
+#define __wifi_esp32_H
 
 /*****************************************************************************
  *	Public Includes
  *****************************************************************************/
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "stdint.h"
+#include "stdbool.h"
 /*****************************************************************************
  *	Public External References
  *****************************************************************************/
@@ -22,11 +25,18 @@
 /*****************************************************************************
  *	Public Typedefs & Enumerations
  *****************************************************************************/
+typedef struct {
+	EventGroupHandle_t 	event_group;
+	uint32_t 			retry;
+	bool				initilized;
+	bool				connected;
 
+}wifi_esp32_inst_t;
 /*****************************************************************************
  *	Public Function Prototypes
  *****************************************************************************/
 
-void app_blinky_init(void);
+bool wifi_esp32_init(void);
+bool wifi_esp32_connected(void);
 
-#endif /* __APP_BLINKY_H */
+#endif /* __wifi_esp32_H */

@@ -1,11 +1,11 @@
 /**
- * @file  task_hello.h
- * @brief prints endlessly to terminal
+ * @file  nvs_esp32.h
+ * @brief application interface to nvs flash
  *
  */
 
-#ifndef __APP_HELLO_H
-#define __APP_HELLO_H
+#ifndef __NVS_ESP32_H
+#define __NVS_ESP32_H
 
 /*****************************************************************************
  *	Public Includes
@@ -27,6 +27,6 @@
  *	Public Function Prototypes
  *****************************************************************************/
 
-void app_hello_init(void);
+void nvs_esp32_init(void);
 
-#endif /* __APP_HELLO_H */
+#endif /* __NVS_ESP32_H */

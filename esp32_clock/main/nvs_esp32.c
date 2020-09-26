@@ -1,16 +1,14 @@
 /**
- * @file app_blinky.c
- * @brief endlessly toggle gpio pin
+ * @file nvs_esp32.c
+ * @brief manages application use of nvs flash
  *
  */
 
 /*****************************************************************************
  *	Private Includes
  *****************************************************************************/
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/gpio.h"
-#include "stdbool.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
 /*****************************************************************************
  *	Private External References
  *****************************************************************************/
@@ -18,7 +16,7 @@
 /*****************************************************************************
  *	Private Defines & Macros
  *****************************************************************************/
-#define BLINK_GPIO 13
+#define TAG	"app nvs"
 /*****************************************************************************
  *	Private Typedefs & Enumerations
  *****************************************************************************/
@@ -30,12 +28,12 @@
 /*****************************************************************************
  *	Private Function Prototypes
  *****************************************************************************/
-static void app_blinky(void *pvParameter);
+
 /*****************************************************************************
  *	Public Functions
  *****************************************************************************/
 /*****************************************************************************
- *  task_hello_init
+ *  nvs_esp32_init
  *  Parameters:
  *    none
  *  Returns:
@@ -43,45 +41,29 @@ static void app_blinky(void *pvParameter);
  *  Description:
  *    Initialize module here
  *****************************************************************************/
-void app_blinky_init(void)
+void nvs_esp32_init(void)
 {
-	//setup gpio pin as output;
-	gpio_pad_select_gpio(BLINK_GPIO);
-	gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+    esp_err_t ret;
 
-	//create task;
-	xTaskCreate(&app_blinky, "app_blinky", 2048, NULL, 5, NULL);
+    ret = nvs_flash_init();
+
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+      ESP_LOGW(TAG, "error, nvs flash erase");
+
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+
+    ESP_ERROR_CHECK(ret);
+
+    ESP_LOGI(TAG, "init complete");
+
+
 }
 
 /*****************************************************************************
  *	Private Functions
  *****************************************************************************/
-
-/*****************************************************************************
- *  task_hello
- *  Parameters:
- *    none
- *  Returns:
- *    none
- *  Description:
- *    Run Infinite loop here.
- *    Endlessly prints to terminal;
- *****************************************************************************/
-static void app_blinky(void *pvParameter)
-{
-	bool blinky_state = false;
-
-	while(1)
-	{
-		//set level;
-        gpio_set_level(BLINK_GPIO, blinky_state);
-
-        //toggle state;
-        blinky_state = !blinky_state;
-
-        //delay;
-        vTaskDelay(1000 / portTICK_RATE_MS);
-	}
-}
 
 

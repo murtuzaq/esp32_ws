@@ -3,9 +3,14 @@ set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
 set(COMPONENT_SRCS "main.c" 
-                   "app_hello.c"
-                   "app_gui.c" 
-                   "gui_hw.c"	)
+                   "app_control.c" 
+                   "app_gui.c"
+                   "app_webclient.c"
+                   "gui_hw.c"
+                   "control_startup.c"	
+                   "nvs_esp32.c"
+                   "wifi_esp32.c"
+                   "ble_esp32.c")
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()
