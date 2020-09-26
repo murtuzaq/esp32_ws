@@ -14,6 +14,9 @@
 * Client demo will enable GATT server's notify after connection. The two devices will then exchange
 * data.
 *
+* QUESTION: Where is it specified when advertisement stops?
+* QUESTION: What is the benifit of the RAW ADV DATA?
+* QUESTION: What is ESP_APP_ID?
 ****************************************************************************/
 
 
@@ -36,7 +39,7 @@
 #define PROFILE_NUM                 1
 #define PROFILE_APP_IDX             0
 #define ESP_APP_ID                  0x55
-#define SAMPLE_DEVICE_NAME          "ESP_GATTS_DEMO"
+#define SAMPLE_DEVICE_NAME          "ESP32 IOT CLOCK"//"ESP_GATTS_DEMO"  //This is the name that shows up when device is SCANED
 #define SVC_INST_ID                 0
 
 /* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
@@ -85,8 +88,13 @@ static uint8_t raw_scan_rsp_data[] = {
 static uint8_t service_uuid[16] = {
     /* LSB <--------------------------------------------------------------------------------> MSB */
     //first uuid, 16bit, [12],[13] is the value
-    0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xFE, 0x00, 0x00, 0x00,
+    //QUESTION: where does the uuid information show up?
+	0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
 };
+
+
+#define  TEST_MANUFACTURER_DATA_LEN 	9
+uint8_t test_manufacturer[9] =     { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 /* The length of adv data must be less than 31 bytes */
 static esp_ble_adv_data_t adv_data = {
@@ -96,8 +104,8 @@ static esp_ble_adv_data_t adv_data = {
     .min_interval        = 0x0006, //slave connection min interval, Time = min_interval * 1.25 msec
     .max_interval        = 0x0010, //slave connection max interval, Time = max_interval * 1.25 msec
     .appearance          = 0x00,
-    .manufacturer_len    = 0,    //TEST_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = NULL, //test_manufacturer,
+    .manufacturer_len    = TEST_MANUFACTURER_DATA_LEN,
+    .p_manufacturer_data = test_manufacturer,
     .service_data_len    = 0,
     .p_service_data      = NULL,
     .service_uuid_len    = sizeof(service_uuid),
@@ -113,8 +121,8 @@ static esp_ble_adv_data_t scan_rsp_data = {
     .min_interval        = 0x0006,
     .max_interval        = 0x0010,
     .appearance          = 0x00,
-    .manufacturer_len    = 0, //TEST_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = NULL, //&test_manufacturer[0],
+    .manufacturer_len    = TEST_MANUFACTURER_DATA_LEN,
+    .p_manufacturer_data = test_manufacturer,
     .service_data_len    = 0,
     .p_service_data      = NULL,
     .service_uuid_len    = sizeof(service_uuid),
@@ -151,6 +159,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 					esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
+//QUESTION: where does the profile hear_rate show up?
 static struct gatts_profile_inst heart_rate_profile_tab[PROFILE_NUM] = {
     [PROFILE_APP_IDX] = {
         .gatts_cb = gatts_profile_event_handler,
@@ -159,10 +168,10 @@ static struct gatts_profile_inst heart_rate_profile_tab[PROFILE_NUM] = {
 };
 
 /* Service */
-static const uint16_t GATTS_SERVICE_UUID_TEST      = 0x00FF;
-static const uint16_t GATTS_CHAR_UUID_TEST_A       = 0xFF01;
-static const uint16_t GATTS_CHAR_UUID_TEST_B       = 0xFF02;
-static const uint16_t GATTS_CHAR_UUID_TEST_C       = 0xFF03;
+static const uint16_t GATTS_SERVICE_UUID_TEST      = 0x180D; // HEART RATE SERVICE			//0x00FF;
+static const uint16_t GATTS_CHAR_UUID_TEST_A       = 0x2A37; // HEART RATE MEASUREMENT 		//0xFF01;
+static const uint16_t GATTS_CHAR_UUID_TEST_B       = 0x2A38; // BODY SENSOR LOCATION  		//0xFF02;
+static const uint16_t GATTS_CHAR_UUID_TEST_C       = 0x2A39; // HEART RATE CONTROL POINT 	//0xFF03;
 
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
