@@ -52,7 +52,7 @@ void control_startup_exe(void)
 	while(1)
 	{
 		//printf("Hello world!\n");
-		ESP_LOGW(__FUNCTION__, "hello world ");
+		//ESP_LOGW(__FUNCTION__, "hello world ");
 		vTaskDelay(10000 / portTICK_PERIOD_MS);
 	}
 }
