@@ -73,6 +73,10 @@ static uint8_t adv_config_done       = 0;
 
 uint16_t heart_rate_handle_table[HRS_IDX_NB];
 
+#if ADD_BATTERY_SERVICE
+uint16_t bat_handle_table[HRS_IDX_NB];
+#endif
+
 typedef struct {
     uint8_t                 *prepare_buf;
     int                     prepare_len;
@@ -650,7 +654,7 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
                 // the data length of gattc write  must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
                 ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
                 esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
-                if (heart_rate_handle_table[IDX_CHAR_CFG_A] == param->write.handle && param->write.len == 2){
+                if (bat_handle_table[IDX_CHAR_CFG_A] == param->write.handle && param->write.len == 2){
                     uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
                     if (descr_value == 0x0001){
                         ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
@@ -660,7 +664,7 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
                             notify_data[i] = i % 0xff;
                         }
                         //the size of notify_data[] need less than MTU size
-                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, heart_rate_handle_table[IDX_CHAR_VAL_A],
+                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
                                                 sizeof(notify_data), notify_data, false);
                     }else if (descr_value == 0x0002){
                         ESP_LOGI(GATTS_TABLE_TAG, "indicate enable");
@@ -670,7 +674,7 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
                             indicate_data[i] = i % 0xff;
                         }
                         //the size of indicate_data[] need less than MTU size
-                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, heart_rate_handle_table[IDX_CHAR_VAL_A],
+                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
                                             sizeof(indicate_data), indicate_data, true);
                     }
                     else if (descr_value == 0x0000){
@@ -706,6 +710,7 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
             break;
         case ESP_GATTS_CONNECT_EVT:
             ESP_LOGI(__FUNCTION__, "ESP_GATTS_CONNECT_EVT, conn_id = %d", param->connect.conn_id);
+#if 0
             esp_log_buffer_hex(GATTS_TABLE_TAG, param->connect.remote_bda, 6);
             esp_ble_conn_update_params_t conn_params = {0};
             memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
@@ -716,10 +721,13 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
             conn_params.timeout = 400;    // timeout = 400*10ms = 4000ms
             //start sent the update connection parameters to the peer device.
             esp_ble_gap_update_conn_params(&conn_params);
+#endif
             break;
         case ESP_GATTS_DISCONNECT_EVT:
             ESP_LOGI(__FUNCTION__, "ESP_GATTS_DISCONNECT_EVT, reason = 0x%x", param->disconnect.reason);
+#if 0
             esp_ble_gap_start_advertising(&adv_params);
+#endif
             break;
         case ESP_GATTS_CREAT_ATTR_TAB_EVT:{
         	ESP_LOGI(__FUNCTION__, "ESP_GATTS_CREAT_ATTR_TAB_EVT");
@@ -732,8 +740,8 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
             }
             else {
                 ESP_LOGI(GATTS_TABLE_TAG, "create attribute table successfully, the number handle = %d\n",param->add_attr_tab.num_handle);
-                memcpy(heart_rate_handle_table, param->add_attr_tab.handles, sizeof(heart_rate_handle_table));
-                esp_ble_gatts_start_service(heart_rate_handle_table[IDX_SVC]);
+                memcpy(bat_handle_table, param->add_attr_tab.handles, sizeof(bat_handle_table));
+                esp_ble_gatts_start_service(bat_handle_table[IDX_SVC]);
             }
             break;
         }
@@ -840,12 +848,13 @@ void ble_esp32_init(void)
         ESP_LOGE(GATTS_TABLE_TAG, "gatts app register error, error code = %x", ret);
         return;
     }
-
+#if ADD_BATTERY_SERVICE
     ret = esp_ble_gatts_app_register(ESP_BATTERY_APP_ID);
     if (ret){
         ESP_LOGE(GATTS_TABLE_TAG, "gatts app register error, error code = %x", ret);
         return;
     }
+#endif
     esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(500);
     if (local_mtu_ret){
         ESP_LOGE(GATTS_TABLE_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
