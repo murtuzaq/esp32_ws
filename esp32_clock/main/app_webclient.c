@@ -31,14 +31,14 @@
 //#define CONFIG_RESOURCE "/"
 //#define CONFIG_WEBSITE	"www.google.com"
 
-//#define CONFIG_RESOURCE	"/demo/aphorisms.php"
-//#define CONFIG_WEBSITE	"www.lucadentella.it"
+#define CONFIG_RESOURCE	"/demo/aphorisms.php"
+#define CONFIG_WEBSITE	"www.lucadentella.it"
 
 //#define CONFIG_RESOURCE	"/api/ip"
 //#define CONFIG_WEBSITE	"www.worldtimeapi.org"
 
-#define CONFIG_RESOURCE	"/newyork/daily.json?key=476f79503ed9eb872b5b6bff59986bb1"
-#define CONFIG_WEBSITE	"www.muslimsalat.com"
+//#define CONFIG_RESOURCE	"/newyork/daily.json?key=476f79503ed9eb872b5b6bff59986bb1"
+//#define CONFIG_WEBSITE	"www.muslimsalat.com"
 
 
 
