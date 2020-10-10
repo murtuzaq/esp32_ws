@@ -1,19 +1,15 @@
 /**
- * @file  wifi_esp32.h
- * @brief application interface to esp wifi module
- *
+ * @file  gui_terminal.h
+ * @brief should terminal window here.
  */
 
-#ifndef __wifi_esp32_H
-#define __wifi_esp32_H
+#ifndef __GUI_TERMINAL_H
+#define __GUI_TERMINAL_H
 
 /*****************************************************************************
  *	Public Includes
  *****************************************************************************/
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "stdint.h"
-#include "stdbool.h"
+
 /*****************************************************************************
  *	Public External References
  *****************************************************************************/
@@ -25,17 +21,11 @@
 /*****************************************************************************
  *	Public Typedefs & Enumerations
  *****************************************************************************/
-typedef enum {
-	WIFI_NOT_INITILIZED = -1,
-	WIFI_CONNECTING 	= 0,
-	WIFI_CONNECTED  	= 1,
-	WIFI_FAILED 		= 2,_
-}wifi_connection_t;
+
 /*****************************************************************************
  *	Public Function Prototypes
  *****************************************************************************/
 
-bool wifi_esp32_init(void);
-wifi_connection_t wifi_esp32_connection(void);
-
-#endif /* __wifi_esp32_H */
+void gui_terminal_exe(void);
+bool gui_terminal_update_text(char* strmsg);
+#endif /* __GUI_TERMINAL_H */

@@ -29,17 +29,23 @@
 #define WIFI_FAIL_BIT      BIT1
 
 #define WIFI_SSID		"myya"
-#define WIFI_PASSWORD	"Qu@!z@r15068"
+#define WIFI_PASSWORD	"Qu@!z@r1506"//"Qu@!z@r15068"
 #define WIFI_MAX_RETRY	 5
 
 /*****************************************************************************
  *	Private Typedefs & Enumerations
  *****************************************************************************/
+static struct {
+	EventGroupHandle_t 	event_group;
+	uint32_t 			retry;
+	bool				initilized;
+	wifi_connection_t	connection;
 
+}wifi_esp32;
 /*****************************************************************************
  *	Private Variables
  *****************************************************************************/
-wifi_esp32_inst_t	wifi_esp32 = {};
+
 
 /*****************************************************************************
  *	Private Function Prototypes
@@ -106,12 +112,14 @@ bool wifi_esp32_init(void)
  *  Description:
  *    checks if wifi is connected
  *****************************************************************************/
-bool wifi_esp32_connected(void)
+wifi_connection_t wifi_esp32_connection(void)
 {
 	if (wifi_esp32.initilized)
-		return(wifi_esp32.connected);
+	{
+		return(wifi_esp32.connection);
+	}
 
-	return(false);
+	return(WIFI_NOT_INITILIZED);
 }
 
 /*****************************************************************************
@@ -124,6 +132,7 @@ static void wifi_esp32_event_handler(void* arg, esp_event_base_t event_base,
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
     	esp_wifi_connect();
+    	wifi_esp32.connection = WIFI_CONNECTING;
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
@@ -131,12 +140,13 @@ static void wifi_esp32_event_handler(void* arg, esp_event_base_t event_base,
     	{
     		esp_wifi_connect();
             wifi_esp32.retry++;
-            ESP_LOGI(TAG, "retry to connect to the AP");
+            ESP_LOGW(TAG, "retry to connect to the AP");
+            wifi_esp32.connection = WIFI_CONNECTING;
         }
     	else
     	{
             xEventGroupSetBits(wifi_esp32.event_group, WIFI_FAIL_BIT);
-            wifi_esp32.connected = false;
+            wifi_esp32.connection = WIFI_FAILED;
         }
         ESP_LOGI(TAG,"connect to the AP fail");
     }
@@ -146,7 +156,7 @@ static void wifi_esp32_event_handler(void* arg, esp_event_base_t event_base,
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         wifi_esp32.retry = 0;
         xEventGroupSetBits(wifi_esp32.event_group, WIFI_CONNECTED_BIT);
-    	wifi_esp32.connected = true;
+        wifi_esp32.connection = WIFI_CONNECTED;
     }
 }
 

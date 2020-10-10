@@ -31,11 +31,11 @@
 //#define CONFIG_RESOURCE "/"
 //#define CONFIG_WEBSITE	"www.google.com"
 
-#define CONFIG_RESOURCE	"/demo/aphorisms.php"
-#define CONFIG_WEBSITE	"www.lucadentella.it"
+//#define CONFIG_RESOURCE	"/demo/aphorisms.php"
+//#define CONFIG_WEBSITE	"www.lucadentella.it"
 
-//#define CONFIG_RESOURCE	"/api/ip"
-//#define CONFIG_WEBSITE	"www.worldtimeapi.org"
+#define CONFIG_RESOURCE	"/api/ip"
+#define CONFIG_WEBSITE	"www.worldtimeapi.org"
 
 //#define CONFIG_RESOURCE	"/newyork/daily.json?key=476f79503ed9eb872b5b6bff59986bb1"
 //#define CONFIG_WEBSITE	"www.muslimsalat.com"
@@ -90,7 +90,7 @@ void app_webclient_init(void)
 static void app_webclient(void *pvParameter)
 {
 
-	while (!wifi_esp32_connected())
+	while (wifi_esp32_connection() != WIFI_CONNECTED)
 	{
 		//wait till wifi is connected;
 		vTaskDelay(1000 / portTICK_RATE_MS);
