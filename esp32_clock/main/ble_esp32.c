@@ -36,18 +36,21 @@
 
 #define GATTS_TABLE_TAG __FUNCTION__//"GATTS_TABLE_DEMO"
 #define ADD_BATTERY_SERVICE	 1
+#define ADD_WIFI_SERVICE	 1
 
-#if ADD_BATTERY_SERVICE
-#define PROFILE_NUM 	2
-#else
-#define PROFILE_NUM                 1//2
-#endif
+
+#define PROFILE_NUM                 3  //this number needs to manually be updated depending on how many services are added
 
 #define PROFILE_HEART_APP_IDX       0
 
 #if ADD_BATTERY_SERVICE
 #define PROFILE_BATTERY_APP_IDX     1
 #endif
+
+#if ADD_WIFI_SERVICE
+#define PROFILE_WIFI_APP_IDX 		2
+#endif
+
 
 #define SAMPLE_DEVICE_NAME          "ESP32 IOT CLOCK"//"ESP_GATTS_DEMO"  //This is the name that shows up when device is SCANED
 
@@ -57,6 +60,11 @@
 #if ADD_BATTERY_SERVICE
 #define BATTERY_SVC_INST_ID      	1
 #define ESP_BATTERY_APP_ID        	0xAA
+#endif
+
+#if ADD_WIFI_SERVICE
+#define WIFI_SVC_INST_ID      		2
+#define ESP_WIFI_APP_ID        		0xA5
 #endif
 
 /* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
@@ -75,6 +83,10 @@ uint16_t heart_rate_handle_table[HRS_IDX_NB];
 
 #if ADD_BATTERY_SERVICE
 uint16_t bat_handle_table[HRS_IDX_NB];
+#endif
+
+#if ADD_WIFI_SERVICE
+uint16_t wifi_handle_table[HRS_IDX_NB];
 #endif
 
 typedef struct {
@@ -183,6 +195,11 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event,
 					esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 #endif
 
+#if ADD_WIFI_SERVICE
+static void gatts_wifi_profile_event_handler(esp_gatts_cb_event_t event,
+					esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+#endif
+
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
 //QUESTION: where does the profile hear_rate show up?
 static struct gatts_profile_inst profile_tab[PROFILE_NUM] = {
@@ -196,19 +213,33 @@ static struct gatts_profile_inst profile_tab[PROFILE_NUM] = {
 		.gatts_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
 	},
 #endif
+
+#if ADD_WIFI_SERVICE
+	[PROFILE_WIFI_APP_IDX] = {
+		.gatts_cb = gatts_wifi_profile_event_handler,
+		.gatts_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
+	},
+#endif
 };
 
 /* Service */
-static const uint16_t GATTS_HEART_SERVICE_UUID     = 0x180D; // HEART RATE SERVICE			//0x00FF;
-static const uint16_t GATTS_HEART_CHAR_UUID_A       = 0x2A37; // HEART RATE MEASUREMENT 		//0xFF01;
-static const uint16_t GATTS_HEART_CHAR_UUID_B       = 0x2A38; // BODY SENSOR LOCATION  		//0xFF02;
-static const uint16_t GATTS_HEART_CHAR_UUID_C       = 0x2A39; // HEART RATE CONTROL POINT 	//0xFF03;
+static const uint16_t GATTS_HEART_SERVICE_UUID     	= ESP_GATT_UUID_HEART_RATE_SVC; 	// HEART RATE SERVICE			//0x00FF;
+static const uint16_t GATTS_HEART_CHAR_UUID_A       = ESP_GATT_HEART_RATE_MEAS; 		//0x2A37; // HEART RATE MEASUREMENT 		//0xFF01;
+static const uint16_t GATTS_HEART_CHAR_UUID_B       = ESP_GATT_BODY_SENSOR_LOCATION; 	//0x2A38; // BODY SENSOR LOCATION  		//0xFF02;
+static const uint16_t GATTS_HEART_CHAR_UUID_C       = ESP_GATT_HEART_RATE_CNTL_POINT; 	//0x2A39; // HEART RATE CONTROL POINT 	//0xFF03;
 
 #if ADD_BATTERY_SERVICE
-static const uint16_t GATTS_BATTERY_SERVICE_UUID	= 0x180F;
-static const uint16_t GATTS_BATTERY_LEVEL_UUID_A	= 0x2A19;
+static const uint16_t GATTS_BATTERY_SERVICE_UUID	= ESP_GATT_UUID_BATTERY_SERVICE_SVC;
+static const uint16_t GATTS_BATTERY_LEVEL_UUID_A	= ESP_GATT_UUID_BATTERY_LEVEL; //0x2A19;
 static const uint16_t GATTS_BATTERY_STATE_UUID_B	= 0x2A1B;
 static const uint16_t GATTS_BATTERY_POWER_UUID_C	= 0x2A1A;
+#endif
+
+#if ADD_WIFI_SERVICE
+static const uint16_t GATTS_WIFI_SERVICE_UUID	= 0x00FF;
+static const uint16_t GATTS_WIFI_STATE_UUID		= 0xFF01;
+static const uint16_t GATTS_WIFI_SSID_UUID		= 0xFF02;
+static const uint16_t GATTS_WIFI_PASSWORD_UUID_	= 0xFF03;
 #endif
 
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
@@ -224,6 +255,16 @@ static const uint8_t hrs_char_value[4]             = {0x11, 0x22, 0x33, 0x44};
 static const uint8_t battery_measurement_ccc[2]    = {0x00, 0x00};
 static const uint8_t battery_level				   = 50;  //50%
 static const uint8_t battery_char_value[4]         = {0x01, 0x01, 0x01, 0x01};
+//static const uint16_t secondary_service_uuid         = ESP_GATT_UUID_SEC_SERVICE;
+#endif
+
+#if ADD_WIFI_SERVICE
+static const uint8_t wifi_state;
+static const uint8_t wifi_ssid[20]    				= {};
+static const uint8_t wifi_password[20]				 ={};
+static const uint8_t wifi_measurement_ccc[2]    	= {0x10, 0x20};
+
+//static const uint16_t other_service_uuid         = ESP_GATT_UUID_INCLUDE_SERVICE;
 #endif
 
 /* Full Database Description - Used to add attributes into the database */
@@ -313,6 +354,53 @@ static const esp_gatts_attr_db_t battery_gatt_db[HRS_IDX_NB] =
     [IDX_CHAR_VAL_C]  =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_BATTERY_POWER_UUID_C, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(battery_char_value), (uint8_t *)battery_char_value}},
+
+};
+#endif
+
+#if ADD_WIFI_SERVICE
+/* Full Database Description - Used to add attributes into the database */
+static const esp_gatts_attr_db_t wifi_gatt_db[HRS_IDX_NB] =
+{
+    // Service Declaration
+    [IDX_SVC]        =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ,
+      sizeof(uint16_t), sizeof(GATTS_WIFI_SERVICE_UUID), (uint8_t *)&GATTS_WIFI_SERVICE_UUID}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_A]     =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_A] =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_STATE_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_state), (uint8_t *)&wifi_state}},
+
+    /* Client Characteristic Configuration Descriptor */
+    [IDX_CHAR_CFG_A]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      sizeof(uint16_t), sizeof(wifi_measurement_ccc), (uint8_t *)wifi_measurement_ccc}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_B]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_B]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_SSID_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_ssid), (uint8_t *)wifi_ssid}},
+
+    /* Characteristic Declaration */
+    [IDX_CHAR_C]      =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_write}},
+
+    /* Characteristic Value */
+    [IDX_CHAR_VAL_C]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_PASSWORD_UUID_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_password), (uint8_t *)wifi_password}},
 
 };
 #endif
@@ -759,6 +847,122 @@ static void gatts_bat_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt
 }
 #endif
 
+
+#if ADD_WIFI_SERVICE
+static void gatts_wifi_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
+{
+    switch (event) {
+        case ESP_GATTS_REG_EVT:{
+        	ESP_LOGI(__FUNCTION__, "event = %d, gatts_if = %d, param.status = %d, param.app_id = %d", event, gatts_if, param->reg.status, param->reg.app_id);
+
+            ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_REG_EVT, create attr table for wifi_gatt_db");
+            esp_err_t create_attr_ret = esp_ble_gatts_create_attr_tab(wifi_gatt_db, gatts_if, HRS_IDX_NB, WIFI_SVC_INST_ID);
+            if (create_attr_ret){
+                ESP_LOGE(GATTS_TABLE_TAG, "create attr table failed, error code = %x", create_attr_ret);
+            }
+        }
+       	    break;
+        case ESP_GATTS_READ_EVT:
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_READ_EVT");
+       	    break;
+        case ESP_GATTS_WRITE_EVT:
+        	ESP_LOGI(__FUNCTION__,"ESP_GATTS_WRITE_EVT");
+            if (!param->write.is_prep){
+                // the data length of gattc write  must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
+                ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
+                esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
+                if (wifi_handle_table[IDX_CHAR_CFG_A] == param->write.handle && param->write.len == 2){
+                    uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
+                    if (descr_value == 0x0001){
+                        ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
+                        uint8_t notify_data[15];
+                        for (int i = 0; i < sizeof(notify_data); ++i)
+                        {
+                            notify_data[i] = i % 0xff;
+                        }
+                        //the size of notify_data[] need less than MTU size
+                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
+                                                sizeof(notify_data), notify_data, false);
+                    }else if (descr_value == 0x0002){
+                        ESP_LOGI(GATTS_TABLE_TAG, "indicate enable");
+                        uint8_t indicate_data[15];
+                        for (int i = 0; i < sizeof(indicate_data); ++i)
+                        {
+                            indicate_data[i] = i % 0xff;
+                        }
+                        //the size of indicate_data[] need less than MTU size
+                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
+                                            sizeof(indicate_data), indicate_data, true);
+                    }
+                    else if (descr_value == 0x0000){
+                        ESP_LOGI(GATTS_TABLE_TAG, "notify/indicate disable ");
+                    }else{
+                        ESP_LOGE(GATTS_TABLE_TAG, "unknown descr value");
+                        esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
+                    }
+
+                }
+                /* send response when param->write.need_rsp is true*/
+                if (param->write.need_rsp){
+                    esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
+                }
+            }else{
+                /* handle prepare write */
+                example_prepare_write_event_env(gatts_if, &prepare_write_env, param);
+            }
+      	    break;
+        case ESP_GATTS_EXEC_WRITE_EVT:
+            // the length of gattc prepare write data must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_EXEC_WRITE_EVT");
+            example_exec_write_event_env(&prepare_write_env, param);
+            break;
+        case ESP_GATTS_MTU_EVT:
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_MTU_EVT, MTU %d", param->mtu.mtu);
+            break;
+        case ESP_GATTS_CONF_EVT:
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_CONF_EVT, status = %d, attr_handle %d", param->conf.status, param->conf.handle);
+            break;
+        case ESP_GATTS_START_EVT:
+            ESP_LOGI(__FUNCTION__, "SERVICE_START_EVT, status %d, service_handle %d", param->start.status, param->start.service_handle);
+            break;
+        case ESP_GATTS_CONNECT_EVT:
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_CONNECT_EVT, conn_id = %d", param->connect.conn_id);
+
+            break;
+        case ESP_GATTS_DISCONNECT_EVT:
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_DISCONNECT_EVT, reason = 0x%x", param->disconnect.reason);
+
+            break;
+        case ESP_GATTS_CREAT_ATTR_TAB_EVT:{
+        	ESP_LOGI(__FUNCTION__, "ESP_GATTS_CREAT_ATTR_TAB_EVT");
+            if (param->add_attr_tab.status != ESP_GATT_OK){
+                ESP_LOGE(GATTS_TABLE_TAG, "create attribute table failed, error code=0x%x", param->add_attr_tab.status);
+            }
+            else if (param->add_attr_tab.num_handle != HRS_IDX_NB){
+                ESP_LOGE(GATTS_TABLE_TAG, "create attribute table abnormally, num_handle (%d) \
+                        doesn't equal to HRS_IDX_NB(%d)", param->add_attr_tab.num_handle, HRS_IDX_NB);
+            }
+            else {
+                ESP_LOGI(GATTS_TABLE_TAG, "create attribute table successfully, the number handle = %d\n",param->add_attr_tab.num_handle);
+                memcpy(wifi_handle_table, param->add_attr_tab.handles, sizeof(wifi_handle_table));
+                esp_ble_gatts_start_service(wifi_handle_table[IDX_SVC]);
+            }
+            break;
+        }
+        case ESP_GATTS_STOP_EVT:
+        case ESP_GATTS_OPEN_EVT:
+        case ESP_GATTS_CANCEL_OPEN_EVT:
+        case ESP_GATTS_CLOSE_EVT:
+        case ESP_GATTS_LISTEN_EVT:
+        case ESP_GATTS_CONGEST_EVT:
+        case ESP_GATTS_UNREG_EVT:
+        case ESP_GATTS_DELETE_EVT:
+        default:
+            break;
+    }
+}
+#endif
+
 static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
 
@@ -773,9 +977,16 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
         		profile_tab[PROFILE_HEART_APP_IDX].gatts_if = gatts_if;
         	}
 #if ADD_BATTERY_SERVICE
-        	if (param->reg.app_id == ESP_BATTERY_APP_ID)
+        	else if (param->reg.app_id == ESP_BATTERY_APP_ID)
         	{
         		profile_tab[PROFILE_BATTERY_APP_IDX].gatts_if = gatts_if;
+        	}
+#endif
+
+#if ADD_WIFI_SERVICE
+        	else if (param->reg.app_id == ESP_WIFI_APP_ID)
+        	{
+        		profile_tab[PROFILE_WIFI_APP_IDX].gatts_if = gatts_if;
         	}
 #endif
         } else
@@ -850,6 +1061,14 @@ void ble_esp32_init(void)
     }
 #if ADD_BATTERY_SERVICE
     ret = esp_ble_gatts_app_register(ESP_BATTERY_APP_ID);
+    if (ret){
+        ESP_LOGE(GATTS_TABLE_TAG, "gatts app register error, error code = %x", ret);
+        return;
+    }
+#endif
+
+#if ADD_WIFI_SERVICE
+    ret = esp_ble_gatts_app_register(ESP_WIFI_APP_ID);
     if (ret){
         ESP_LOGE(GATTS_TABLE_TAG, "gatts app register error, error code = %x", ret);
         return;
