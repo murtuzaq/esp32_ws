@@ -10,7 +10,7 @@
 void app_main(void)
 {
 	nvs_esp32_init();
-	wifi_esp32_init();
+	wifi_esp32_init("myya", "Qu@!z@r15068");
 	ble_esp32_init();
 
 	app_control_init();

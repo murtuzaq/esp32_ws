@@ -70,7 +70,7 @@
 /* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
 *  the data length must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX. 
 */
-#define GATTS_DEMO_CHAR_VAL_LEN_MAX 500
+#define GATTS_DEMO_CHAR_VAL_LEN_MAX 20
 #define PREPARE_BUF_MAX_SIZE        1024
 #define CHAR_DECLARATION_SIZE       (sizeof(uint8_t))
 
@@ -236,10 +236,9 @@ static const uint16_t GATTS_BATTERY_POWER_UUID_C	= 0x2A1A;
 #endif
 
 #if ADD_WIFI_SERVICE
-static const uint16_t GATTS_WIFI_SERVICE_UUID	= 0x00FF;
-static const uint16_t GATTS_WIFI_STATE_UUID		= 0xFF01;
-static const uint16_t GATTS_WIFI_SSID_UUID		= 0xFF02;
-static const uint16_t GATTS_WIFI_PASSWORD_UUID_	= 0xFF03;
+static const uint8_t GATTS_WIFI_SERVICE_UUID[16]	= { 0xe4, 0xc4, 0x2b, 0xf8, 0x22, 0xf3, 0x4b, 0x15, 0xa6, 0x9a, 0x37, 0x9d, 0x2c, 0x4b, 0x4b, 0xc3 };// 0x00FF;
+static const uint8_t GATTS_WIFI_SSID_UUID[16]		= { 0xe5, 0xc4, 0x2b, 0xf8, 0x22, 0xf3, 0x4b, 0x15, 0xa6, 0x9a, 0x37, 0x9d, 0x2c, 0x4b, 0x4b, 0xc3 };
+static const uint8_t GATTS_WIFI_PASSWORD_UUID[16]	= { 0xe6, 0xc4, 0x2b, 0xf8, 0x22, 0xf3, 0x4b, 0x15, 0xa6, 0x9a, 0x37, 0x9d, 0x2c, 0x4b, 0x4b, 0xc3 };
 #endif
 
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
@@ -247,6 +246,7 @@ static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
 static const uint16_t character_client_config_uuid = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
 static const uint8_t char_prop_read                =  ESP_GATT_CHAR_PROP_BIT_READ;
 static const uint8_t char_prop_write               = ESP_GATT_CHAR_PROP_BIT_WRITE;
+static const uint8_t char_prop_read_write          = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ;
 static const uint8_t char_prop_read_write_notify   = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
 static const uint8_t heart_measurement_ccc[2]      = {0x00, 0x00};
 static const uint8_t hrs_char_value[4]             = {0x11, 0x22, 0x33, 0x44};
@@ -262,7 +262,7 @@ static const uint8_t battery_char_value[4]         = {0x01, 0x01, 0x01, 0x01};
 static const uint8_t wifi_state;
 static const uint8_t wifi_ssid[20]    				= {};
 static const uint8_t wifi_password[20]				 ={};
-static const uint8_t wifi_measurement_ccc[2]    	= {0x10, 0x20};
+static const uint8_t wifi_measurement_ccc[2]    	= {0x00, 0x00};
 
 //static const uint16_t other_service_uuid         = ESP_GATT_UUID_INCLUDE_SERVICE;
 #endif
@@ -367,40 +367,30 @@ static const esp_gatts_attr_db_t wifi_gatt_db[HRS_IDX_NB] =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ,
       sizeof(uint16_t), sizeof(GATTS_WIFI_SERVICE_UUID), (uint8_t *)&GATTS_WIFI_SERVICE_UUID}},
 
-    /* Characteristic Declaration */
+    /* Characteristic Declaration of SSID*/
     [IDX_CHAR_A]     =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write}},
 
     /* Characteristic Value */
     [IDX_CHAR_VAL_A] =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_STATE_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_state), (uint8_t *)&wifi_state}},
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_SSID_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_state), (uint8_t *)&wifi_ssid}},
 
     /* Client Characteristic Configuration Descriptor */
     [IDX_CHAR_CFG_A]  =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
       sizeof(uint16_t), sizeof(wifi_measurement_ccc), (uint8_t *)wifi_measurement_ccc}},
 
-    /* Characteristic Declaration */
+    /* Characteristic Declaration of Password*/
     [IDX_CHAR_B]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-
-    /* Characteristic Value */
-    [IDX_CHAR_VAL_B]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_SSID_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_ssid), (uint8_t *)wifi_ssid}},
-
-    /* Characteristic Declaration */
-    [IDX_CHAR_C]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
       CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_write}},
 
     /* Characteristic Value */
-    [IDX_CHAR_VAL_C]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_PASSWORD_UUID_, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_password), (uint8_t *)wifi_password}},
+    [IDX_CHAR_VAL_B]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_WIFI_PASSWORD_UUID, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(wifi_ssid), (uint8_t *)wifi_password}},
 
 };
 #endif
@@ -854,8 +844,7 @@ static void gatts_wifi_profile_event_handler(esp_gatts_cb_event_t event, esp_gat
     switch (event) {
         case ESP_GATTS_REG_EVT:{
         	ESP_LOGI(__FUNCTION__, "event = %d, gatts_if = %d, param.status = %d, param.app_id = %d", event, gatts_if, param->reg.status, param->reg.app_id);
-
-            ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_REG_EVT, create attr table for wifi_gatt_db");
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_REG_EVT, create attr table for wifi_gatt_db");
             esp_err_t create_attr_ret = esp_ble_gatts_create_attr_tab(wifi_gatt_db, gatts_if, HRS_IDX_NB, WIFI_SVC_INST_ID);
             if (create_attr_ret){
                 ESP_LOGE(GATTS_TABLE_TAG, "create attr table failed, error code = %x", create_attr_ret);
@@ -866,55 +855,15 @@ static void gatts_wifi_profile_event_handler(esp_gatts_cb_event_t event, esp_gat
             ESP_LOGI(__FUNCTION__, "ESP_GATTS_READ_EVT");
        	    break;
         case ESP_GATTS_WRITE_EVT:
-        	ESP_LOGI(__FUNCTION__,"ESP_GATTS_WRITE_EVT");
-            if (!param->write.is_prep){
-                // the data length of gattc write  must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
-                ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
-                esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
-                if (wifi_handle_table[IDX_CHAR_CFG_A] == param->write.handle && param->write.len == 2){
-                    uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
-                    if (descr_value == 0x0001){
-                        ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
-                        uint8_t notify_data[15];
-                        for (int i = 0; i < sizeof(notify_data); ++i)
-                        {
-                            notify_data[i] = i % 0xff;
-                        }
-                        //the size of notify_data[] need less than MTU size
-                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
-                                                sizeof(notify_data), notify_data, false);
-                    }else if (descr_value == 0x0002){
-                        ESP_LOGI(GATTS_TABLE_TAG, "indicate enable");
-                        uint8_t indicate_data[15];
-                        for (int i = 0; i < sizeof(indicate_data); ++i)
-                        {
-                            indicate_data[i] = i % 0xff;
-                        }
-                        //the size of indicate_data[] need less than MTU size
-                        esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, bat_handle_table[IDX_CHAR_VAL_A],
-                                            sizeof(indicate_data), indicate_data, true);
-                    }
-                    else if (descr_value == 0x0000){
-                        ESP_LOGI(GATTS_TABLE_TAG, "notify/indicate disable ");
-                    }else{
-                        ESP_LOGE(GATTS_TABLE_TAG, "unknown descr value");
-                        esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
-                    }
+            ESP_LOGI(__FUNCTION__, "ESP_GATTS_WRITE_EVT, param->write.handle = %04X, value len = %d", param->write.handle, param->write.len);
+            esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
+            //notify other task, that packets have been received:
 
-                }
-                /* send response when param->write.need_rsp is true*/
-                if (param->write.need_rsp){
-                    esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
-                }
-            }else{
-                /* handle prepare write */
-                example_prepare_write_event_env(gatts_if, &prepare_write_env, param);
-            }
+
       	    break;
         case ESP_GATTS_EXEC_WRITE_EVT:
             // the length of gattc prepare write data must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
             ESP_LOGI(__FUNCTION__, "ESP_GATTS_EXEC_WRITE_EVT");
-            example_exec_write_event_env(&prepare_write_env, param);
             break;
         case ESP_GATTS_MTU_EVT:
             ESP_LOGI(__FUNCTION__, "ESP_GATTS_MTU_EVT, MTU %d", param->mtu.mtu);

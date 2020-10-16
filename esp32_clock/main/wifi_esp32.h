@@ -35,7 +35,7 @@ typedef enum {
  *	Public Function Prototypes
  *****************************************************************************/
 
-bool wifi_esp32_init(void);
+bool wifi_esp32_init(char* ssid, char* password);
 wifi_connection_t wifi_esp32_connection(void);
 
 #endif /* __wifi_esp32_H */

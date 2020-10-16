@@ -13,6 +13,7 @@
 #include "esp_err.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
+#include "string.h"
 /*****************************************************************************
  *	Private External References
  *****************************************************************************/
@@ -29,7 +30,7 @@
 #define WIFI_FAIL_BIT      BIT1
 
 #define WIFI_SSID		"myya"
-#define WIFI_PASSWORD	"Qu@!z@r1506"//"Qu@!z@r15068"
+#define WIFI_PASSWORD	"Qu@!z@r15068"//"Qu@!z@r15068"
 #define WIFI_MAX_RETRY	 5
 
 /*****************************************************************************
@@ -65,7 +66,7 @@ static void wifi_esp32_event_handler(void* arg, esp_event_base_t event_base,
  *  Description:
  *    Initialize module here
  *****************************************************************************/
-bool wifi_esp32_init(void)
+bool wifi_esp32_init(char* ssid, char* password)
 {
 
 	wifi_esp32.event_group = xEventGroupCreate();
@@ -80,14 +81,9 @@ bool wifi_esp32_init(void)
     esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_esp32_event_handler, NULL);
     esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_esp32_event_handler, NULL);
 
-    wifi_config_t wifi_config =
-    {
-    	.sta =
-    	{
-    		.ssid = WIFI_SSID,
-			.password = WIFI_PASSWORD
-    	},
-    };
+    wifi_config_t wifi_config = {};
+    strcpy((char*)wifi_config.sta.ssid, ssid);
+    strcpy((char*)wifi_config.sta.password, password);
 
     esp_wifi_set_mode(WIFI_MODE_STA);
     esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
