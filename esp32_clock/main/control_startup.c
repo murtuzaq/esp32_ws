@@ -14,6 +14,7 @@
 #include "gui_terminal.h"
 #include "esp_log.h"
 #include "wifi_esp32.h"
+#include "nvs_esp32.h"
 #include <string.h>
 /*****************************************************************************
  *	Private External References
@@ -71,6 +72,29 @@ void control_startup_exe(void)
 
 	gui_terminal_update_text("startup");
 	vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+	char* hello = "Hello World - Murtuza Yaquta Yuns Aliyah";
+
+	uint32_t elements = nvs_esp32_get_size("HELLO");
+	if (elements == 0)
+	{
+		ESP_LOGW(__FUNCTION__,  "key = HELLO, does not exist, create new");
+		nvs_esp32_write("HELLO", (uint8_t*)hello, strlen(hello));
+	}
+	else
+	{
+		uint32_t allocate_size = elements + 1;
+		uint8_t* buf = malloc(allocate_size);
+		bzero(buf, allocate_size);
+
+		nvs_esp32_read("HELLO", buf, &allocate_size);
+		ESP_LOGW(__FUNCTION__,  "key = HELLO, existed.  string reads = %s", buf);
+
+	}
+
+
+
+
 
 	while(!startup.exit)
 	{

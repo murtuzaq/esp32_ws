@@ -66,13 +66,7 @@ typedef struct
 	char 		msg[80];
 } gui_message_t;
 
-typedef struct
-{
-	bool 			initilized;
-	gui_view		current_view;
-	QueueHandle_t 	Queue;
 
-}gui_t;
 /*****************************************************************************
  *	Public Function Prototypes
  *****************************************************************************/

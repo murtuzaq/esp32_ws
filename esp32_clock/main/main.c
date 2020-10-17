@@ -13,7 +13,7 @@ void app_main(void)
 	wifi_esp32_init("myya", "Qu@!z@r15068");
 	ble_esp32_init();
 
-	app_control_init();
+	control_init();
 	app_gui_init();
 	app_webclient_init();
 

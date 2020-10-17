@@ -948,11 +948,11 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
         int idx;
         for (idx = 0; idx < PROFILE_NUM; idx++) {
             /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
-        	 ESP_LOGI(__FUNCTION__, " profile_tab[%d].gatts_if = %d, gatts_if = %d", idx, profile_tab[idx].gatts_if, gatts_if);
+
             if (gatts_if == ESP_GATT_IF_NONE || gatts_if == profile_tab[idx].gatts_if) {
-            	 ESP_LOGI(__FUNCTION__, " profile_tab[%d] callback", idx);
                 if (profile_tab[idx].gatts_cb)
                 {
+                	ESP_LOGI(__FUNCTION__, " profile_tab[%d] callback", idx);
                 	profile_tab[idx].gatts_cb(event, gatts_if, param);
                 }
             }

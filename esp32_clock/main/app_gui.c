@@ -38,7 +38,13 @@ typedef void (*gui_loop) (void);
 /*****************************************************************************
  *	Private Variables
  *****************************************************************************/
-static gui_t gui = {};
+static struct
+{
+	bool 			initilized;
+	gui_view		current_view;
+	QueueHandle_t 	Queue;
+
+}gui;
 
 gui_loop gui_lp[GUI_VIEW_TOTAL] =
 {
@@ -56,9 +62,7 @@ static void app_gui(void *pvParameter);
 
 void app_gui_init()
 {
-	/* Create a queue capable of containing 10 pointers to AMessage
-	   structures.  These are to be queued by pointers as they are
-	   relatively large structures. */
+	/* Create a queue capable */
 
 	gui.Queue = xQueueCreate( 10, sizeof(  gui_message_t ) );
 
